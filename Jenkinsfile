@@ -22,7 +22,7 @@ pipeline {
 
         stage("Run tests") {
             steps {
-                bat "pytest ./tests/test_sample.py"
+                pwsh "pytest ./tests/test_sample.py"
             }
 
             post {
