@@ -35,6 +35,21 @@ pipeline {
                 }
             }
         }
+
+        stage("Docker push") {
+            steps {
+                echo "Running in ${env.WORKSPACE}"
+
+                dir("${env.WORKSPACE}/azure-vote") {
+                    script {
+                        docker.withDockerRegistry('', 'dockerhub') {
+                            def image = docker.build("azure-vote-front:v1")
+                            image.push()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     post {
