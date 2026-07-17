@@ -45,13 +45,14 @@ pipeline {
                 echo "Running in ${env.WORKSPACE}"
 
                 dir("${env.WORKSPACE}/azure-vote") {
-                    script {
-                        // Use the flat step with named parameters. 
-                        // Empty registry url '' defaults to Docker Hub.
-                        withDockerRegistry(url: '', credentialsId: 'dockerhub') {
-                            def image = docker.build("azure-vote-front:v1")
-                            image.push()
-                        }
+                    // This securely grabs your password without using the buggy Docker wrapper
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        bat """
+                            echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                            docker build -t burno/azure-vote-front:v1 .
+                            docker push burno/azure-vote-front:v1
+                            docker logout
+                        """
                     }
                 }
             }
