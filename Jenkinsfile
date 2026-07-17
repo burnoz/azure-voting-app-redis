@@ -10,13 +10,13 @@ pipeline {
 
         stage("Docker build") {
             steps {
-                bat "docker compose build"
+                sh "docker compose build"
             }
         } 
 
         stage("Start app") {
             steps {
-                bat "docker compose up -d"
+                sh "docker compose up -d"
             }
         }
 
@@ -44,17 +44,14 @@ pipeline {
             steps {
                 echo "Running in ${env.WORKSPACE}"
 
-                dir("${env.WORKSPACE}/azure-vote") {
-                    // This securely grabs your password without using the buggy Docker wrapper
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        bat """
-                            echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                            docker build -t burno/azure-vote-front:v1 .
-                            docker push burno/azure-vote-front:v1
-                            docker logout
-                        """
+                 dir("${env.WORKSPACE}/azure-vote") {
+                    script {
+                        docker.withDockerRegistry('', 'dockerhub') {
+                            def image = docker.build("azure-vote-front:v1")
+                            image.push()
+                        }
                     }
-                }
+                } 
             }
         }
     }
