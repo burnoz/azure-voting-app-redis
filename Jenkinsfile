@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage("Verify branch") {
             steps {
-                echo GIT_BRANCH
+                echo env.GIT_BRANCH
             }
         }
 
@@ -46,7 +46,9 @@ pipeline {
 
                 dir("${env.WORKSPACE}/azure-vote") {
                     script {
-                        docker.withDockerRegistry('', 'dockerhub') {
+                        // Use the flat step with named parameters. 
+                        // Empty registry url '' defaults to Docker Hub.
+                        withDockerRegistry(url: '', credentialsId: 'dockerhub') {
                             def image = docker.build("azure-vote-front:v1")
                             image.push()
                         }
